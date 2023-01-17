@@ -1,63 +1,62 @@
-from confluent_kafka import Producer
+from kafka import KafkaProducer
 from faker import Faker
 import json
-import time
 import logging
 import random
 
-print('Kafka Producer sendo inciado...')
+print('Kafka produtor starting...')
 
-#Data fake
+#Topic
+topic = 'topic-name'
+
+#Instance Fake Data Lib
 dataFake = Faker()
 
-#Log Producer
-logging.basicConfig(format='%(asctime)s %(message)s',
-                    datefmt='%Y-%m-%d %H:%M:%S',
-                    filename='producer.log',
-                    filemode='w')
-
+#Log Producer File
+logging.basicConfig(
+    format='%(asctime)s %(message)s',
+    datefmt='%Y-%m-%d %H:%M:%S',
+    filename='producer.log',
+    filemode='w'
+    )
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-#AWS config
-#servers = "msk_broker_1:9096,msk_broker_2:9096"
-# producer = Producer({
-#     'bootstrap.servers':servers,
-#     'security.protocol': 'SASL',
-#     'sasl_plain_username': 'the_username',
-#     'sasl_plain_password': 'the_password',
-#     'sasl_mechanism': 'SCRAM-SHA-512'
-# })
+#Conection Kafka Brokers
+producer = KafkaProducer(
+    bootstrap_servers='server:port,server:port',
+    security_protocol='SSL',
+    ssl_check_hostname=False,
+    ssl_cafile='./cacert.pem',
+    ssl_certfile='./certificate.pem'
+    )
 
-#Docker config
-servers = "localhost:9092"
-producer = Producer({
-    'bootstrap.servers':servers})
+#Callback Sucess
+def send_success(record_metadata):
+    print('topic:', record_metadata.topic)
+    print('partition:', record_metadata.partition)
+    print('offiset:', record_metadata.offset)
 
-#Callback messages
-def posted(err,msg):
-    if err is not None:
-        print('Error: {}'.format(err))
-    else:
-        message = 'Mensagem produzida no topico {} com o valor {}\n'.format(msg.topic(), msg.value().decode('utf-8'))
-        logger.info(message)
-        print(message)
+#Callback Error
+def send_error(excp):
+    log.error('I am an errback', exc_info=excp)
 
-#Create data messages
+#Create Data Messages
 def main():
-    for i in range(5):
-        data={
-           'id': dataFake.random_int(min=20000, max=100000),
-           'nome':dataFake.name(),
-           'endereco':dataFake.street_address() + ' | ' + dataFake.city() + ' | ' + dataFake.country_code(),
-           'plataforma': random.choice(['celular', 'notebook', 'Tablet']),
-           'data': str(dataFake.date_time_this_month())    
-           }
-        
-        #Push data topic
-        producer.poll(1)
-        producer.produce('usuario-topico', json.dumps(data).encode('utf-8'),callback=posted)
+    for i in range(100):
+        #Generate Data Fake
+        data = {
+            'id': dataFake.random_int(min=20000, max=100000),
+            'name': dataFake.name(),
+            'address': dataFake.street_address() + ' | ' + dataFake.city() + ' | ' + dataFake.country_code(),
+            'platform': random.choice(['celular', 'notebook', 'Tablet']),
+            'date': str(dataFake.date_time_this_month())
+        }
+        # Push Data in Topic
+        inputMessage = producer.send(topic, json.dumps(data).encode("utf-8")).add_callback(send_success).add_errback(send_error)
         producer.flush()
-        
+        inputMessage
+        logger.info(inputMessage)
+        print(json.dumps(data))
 if __name__ == '__main__':
     main()
