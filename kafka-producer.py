@@ -4,47 +4,51 @@ import json
 import logging
 import random
 
-print('Kafka produtor starting...')
+print('Kafka producer starting...')
 
-#Topic
+# Topic Name
 topic = 'topic-name'
 
-#Instance Fake Data Lib
+# Instance Fake Data Lib
 dataFake = Faker()
 
-#Log Producer File
+# Log Producer File
 logging.basicConfig(
     format='%(asctime)s %(message)s',
     datefmt='%Y-%m-%d %H:%M:%S',
-    filename='producer.log',
+    filename='produtor.log',
     filemode='w'
-    )
+)
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-#Conection Kafka Brokers
+# Connection Kafka Brokers
 producer = KafkaProducer(
     bootstrap_servers='server:port,server:port',
     security_protocol='SSL',
     ssl_check_hostname=False,
     ssl_cafile='./cacert.pem',
-    ssl_certfile='./certificate.pem'
-    )
+    ssl_certfile='./certificate.pem',
+    # ssl_keyfile='key.pem'
+)
 
-#Callback Sucess
+
+# Callback Success
 def send_success(record_metadata):
     print('topic:', record_metadata.topic)
     print('partition:', record_metadata.partition)
-    print('offiset:', record_metadata.offset)
+    print('offset:', record_metadata.offset)
 
-#Callback Error
+
+# Callback Error
 def send_error(excp):
-    log.error('I am an errback', exc_info=excp)
+    log.error('ERROR', exc_info=excp)
 
-#Create Data Messages
+
+# Create Data Messages
 def main():
-    for i in range(100):
-        #Generate Data Fake
+    for i in range(3):
+        # Generate Fake Data
         data = {
             'id': dataFake.random_int(min=20000, max=100000),
             'name': dataFake.name(),
@@ -53,10 +57,11 @@ def main():
             'date': str(dataFake.date_time_this_month())
         }
         # Push Data in Topic
-        inputMessage = producer.send(topic, json.dumps(data).encode("utf-8")).add_callback(send_success).add_errback(send_error)
+        producer.send(topic, json.dumps(data).encode("utf-8")).add_callback(send_success).add_errback(send_error)
         producer.flush()
-        inputMessage
-        logger.info(inputMessage)
+        logger.info(producer)
         print(json.dumps(data))
+
+
 if __name__ == '__main__':
     main()
