@@ -15,7 +15,7 @@
 virtualenv virtual-environment-name
 source ./virtual-environment-name/bin/activate
 ```
-#### Install library dependencies
+#### Install libraries dependencies
 ```sh
 pip3 install -r requirements.txt
 ```
