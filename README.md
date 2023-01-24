@@ -5,12 +5,12 @@
 
 ### To run the applications start here
 
-### prerequisites
+### Prerequisites
 ```text
 - python3
 - Kafka topic created
 ```
-#### create python virtual environment to run
+#### Create python virtual environment to run
 ```sh
 virtualenv virtual-environment-name
 source ./virtual-environment-name/bin/activate
@@ -24,7 +24,7 @@ pip3 install -r requirements.txt
 # topic name
 topic = 'topic-name'
 ```
-#### specify the desired quantity of produced messages, in the "for i range(3)" of the "main" function. In this case range(3) will be the messages produced
+#### To specify the desired quantity of produced messages, in the "for i range(3)" of the "main" function. In this case range(3) will be the messages produced
 ```python
 # Create data messages
 def main():
