@@ -53,7 +53,7 @@ python3 kafka-consumer.py
 
 #### Convert kafka.client.truststore.jks to cacert.pem and certificate.pem
 
-#### 1 - export the cacert from the kafka.client.truststore.jks file
+#### 1 - Export the cacert from the kafka.client.truststore.jks file
 ```bash
 keytool -list -rfc -keystore kafka.client.truststore.jks -storepass pass-kafka.client.truststore | awk '/BEGIN CERTIFICATE/,/END CERTIFICATE/ {print $0}' > cacert.pem
 ```
@@ -65,4 +65,34 @@ keytool -list -rfc -keystore kafka.client.truststore.jks
 ```bash
 keytool -exportcert -alias root-users.pem -keystore kafka.client.truststore.jks \
         -rfc -file certificate.pem
+```
+#### After generate .pem files reference the files on producer and consumer
+
+#### kafka-producer.py
+```python
+# Connection Kafka Brokers
+producer = KafkaProducer(
+    bootstrap_servers='server:port,server:port',
+    security_protocol='SSL',
+    ssl_check_hostname=False,
+    ssl_cafile='./cacert.pem',
+    ssl_certfile='./certificate.pem',
+    # ssl_keyfile='key.pem'
+)
+```
+
+#### kafka-consumer.py
+```python
+# Connection Kafka Brokers
+consumer = KafkaConsumer(
+    topic,
+    bootstrap_servers='server:port,server:port,
+    security_protocol='SSL',
+    ssl_check_hostname=False,
+    ssl_cafile='./cacert.pem',
+    ssl_certfile='./certificate.pem',
+    auto_offset_reset='earliest',
+    enable_auto_commit=True,
+    group_id=consumer_group
+)
 ```
