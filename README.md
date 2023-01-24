@@ -51,7 +51,6 @@ python3 kafka-consumer.py
 
 ### If necessary, convert kafka.client.truststore.jks to cacert.pem and certificate.pem for Kafka authentication
 
-# kafka-producer-consumer
 ### Convert kafka.client.truststore.jks to cacert.pem and certificate.pem
 
 ### 1 - export the cacert from the kafka.client.truststore.jks file
